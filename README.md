@@ -1,11 +1,11 @@
 # mmc-to-usb
-Simple tool for android devices with usb configfs, to provide whole emmc as usb mass storage device.
+Simple tool for android devices with usb configfs, to provide the whole emmc as usb mass storage device.
 
-#How it work?
-mmc-to-usb builds minmalistic ramdisk with busybox, and init script. When it boots it configures usb interface to mass storage.
+## How it work?
+mmc-to-usb builds an minmalistic ramdisk with busybox and an init script. When it boots, it configures the usb interface to mass storage.
 
-#Use cases
-1.Use dd from PC
-2.Modify partition table (be cearfull)
-3.Just modify some file on some partitions in easy way.
-4.You tell me.
+## Use cases
+- Use dd from PC
+- Modify partition table (**be careful**)
+- Just modify some file on some partitions in easy way.
+- You tell me
