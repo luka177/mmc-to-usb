@@ -16,7 +16,13 @@ mkdir /config
 mount -t configfs -o nodev,noexec,nosuid configfs /config
 
 #Turn on blue led.
-echo 255 > /sys/class/leds/blue/brightness
+if [[ "$DEVICE_HAVE_LED" -eq 2 ]]
+then
+    echo 255 > $BLUE_LED_PATH
+elif [[ "$DEVICE_HAVE_LED" -eq 1 ]]
+then
+    echo 255 > $LED_PATH
+fi
 
 # Create all the symlinks to /bin/busybox
 mkdir -p /usr/bin
@@ -49,9 +55,9 @@ setup_usb_configfs() {
 	# Create english (0x409) strings
 	mkdir $CONFIGFS/g1/strings/0x409 || echo "  Couldn't create $CONFIGFS/g1/strings/0x409"
 
-	echo "Fxtec" > "$CONFIGFS/g1/strings/0x409/manufacturer"
+	echo "$DEVICE_MANUFACTURER" > "$CONFIGFS/g1/strings/0x409/manufacturer"
 	echo "$usb_serialnumber"        > "$CONFIGFS/g1/strings/0x409/serialnumber"
-	echo "Pro 1"         > "$CONFIGFS/g1/strings/0x409/product"
+	echo "$DEVICE_MODEL"         > "$CONFIGFS/g1/strings/0x409/product"
 
 	# Create rndis/mass_storage function
 	mkdir $CONFIGFS/g1/functions/"$usb_rndis_function" \
@@ -99,10 +105,20 @@ setup_usb_configfs() {
 
 setup_usb_configfs
 
-echo 0 > /sys/class/leds/blue/brightness
-echo 255 > /sys/class/leds/green/brightness
+if [[ "$DEVICE_HAVE_LED" -eq 2 ]]
+then
+    echo 0 > $BLUE_LED_PATH
+    echo 255 > $GREEN_LED_PATH
+elif [[ "$DEVICE_HAVE_LED" -eq 1 ]]
+then
+    echo 0 > $LED_PATH
+    sleep 2
+    echo 255 > $LED_PATH
+fi
+
 while true
 do
     echo hi
+    sleep 5
 done
 

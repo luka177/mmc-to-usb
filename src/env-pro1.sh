@@ -1,4 +1,6 @@
 DEVICE=fxtec-pro1
+DEVICE_MANUFACTURER=Fxtec
+DEVICE_MODEL=Pro 1
 NUMOFMMC=6
 MMC1=/dev/sda
 MMC2=/dev/sdb
