@@ -1,0 +1,7 @@
+DEVICE=volla-yggdrasil
+DEVICE_MANUFACTURER=Volla
+DEVICE_MODEL=Phone
+NUMOFMMC=1
+MMC1=/dev/mmcblk0
+DEVICE_HAVE_LED=0
+
