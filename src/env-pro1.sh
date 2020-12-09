@@ -1,0 +1,12 @@
+DEVICE=fxtec-pro1
+NUMOFMMC=6
+MMC1=/dev/sda
+MMC2=/dev/sdb
+MMC3=/dev/sdc
+MMC4=/dev/sdd
+MMC5=/dev/sde
+MMC6=/dev/sdf
+DEVICE_HAVE_LED=2
+RED_LED_PATH=/sys/class/leds/red/brightness
+GREEN_LED_PATH=/sys/class/leds/green/brightness
+BLUE_LED_PATH=/sys/class/leds/blue/brightness

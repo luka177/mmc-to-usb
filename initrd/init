@@ -2,6 +2,8 @@
 
 echo "Welcome to mass storage mode"
 
+. /env.sh
+
 # Mount things needed by this script
 mkdir /proc
 mkdir /sys
@@ -33,11 +35,12 @@ setup_usb_configfs() {
 	# Default values for USB-related deviceinfo variables
 	usb_idVendor="0x1209" # Generic
 	usb_idProduct="0x4201" # Random ID
-	usb_serialnumber="Pro1flasher"
+	usb_serialnumber="mmc-to-usb"
 	usb_rndis_function="rndis.usb0"
 	usb_mass_storage_function="mass_storage.0"
 
 	echo "Setting up an USB gadget through configfs..."
+
 	# Create an usb gadet configuration
 	mkdir $CONFIGFS/g1 
 	echo "$usb_idVendor"  > "$CONFIGFS/g1/idVendor"
@@ -53,22 +56,19 @@ setup_usb_configfs() {
 	# Create rndis/mass_storage function
 	mkdir $CONFIGFS/g1/functions/"$usb_rndis_function" \
 		|| echo "  Couldn't create $CONFIGFS/g1/functions/$usb_rndis_function"
-	mkdir $CONFIGFS/g1/functions/"$usb_mass_storage_function" \
+    mkdir $CONFIGFS/g1/functions/"$usb_mass_storage_function" \
 		|| echo "  Couldn't create $CONFIGFS/g1/functions/$usb_mass_storage_function"
-	mkdir $CONFIGFS/g1/functions/"$usb_mass_storage_function/lun.0" \
-		|| echo "  Couldn't create $CONFIGFS/g1/functions/$usb_mass_storage_function/lun.0"
-	mkdir $CONFIGFS/g1/functions/"$usb_mass_storage_function/lun.1" \
-		|| echo "  Couldn't create $CONFIGFS/g1/functions/$usb_mass_storage_function/lun.1"
-	mkdir $CONFIGFS/g1/functions/"$usb_mass_storage_function/lun.2" \
-		|| echo "  Couldn't create $CONFIGFS/g1/functions/$usb_mass_storage_function/lun.2"
-	mkdir $CONFIGFS/g1/functions/"$usb_mass_storage_function/lun.3" \
-		|| echo "  Couldn't create $CONFIGFS/g1/functions/$usb_mass_storage_function/lun.3"
-    mkdir $CONFIGFS/g1/functions/"$usb_mass_storage_function/lun.4" \
-		|| echo "  Couldn't create $CONFIGFS/g1/functions/$usb_mass_storage_function/lun.4"
-    mkdir $CONFIGFS/g1/functions/"$usb_mass_storage_function/lun.4" \
-		|| echo "  Couldn't create $CONFIGFS/g1/functions/$usb_mass_storage_function/lun.4"
 
-	# Create configuration instance for the gadget
+    i=1
+    while [ $i -le $((NUMOFMMC)) ]
+    do 
+        echo "Processing device $i" 
+        mkdir $CONFIGFS/g1/functions/"$usb_mass_storage_function/lun.$i" \
+		    || echo "  Couldn't create $CONFIGFS/g1/functions/$usb_mass_storage_function/lun.$i"
+        i=$(( i + 1 ))
+    done
+
+    # Create configuration instance for the gadget
 	mkdir $CONFIGFS/g1/configs/c.1 \
 		|| echo "  Couldn't create $CONFIGFS/g1/configs/c.1"
 	mkdir $CONFIGFS/g1/configs/c.1/strings/0x409 \
@@ -76,18 +76,17 @@ setup_usb_configfs() {
 	echo "rndis" > $CONFIGFS/g1/configs/c.1/strings/0x409/configuration \
 		|| echo "  Couldn't write configration name"
 
-	# Make sure the node for the eMMC exists
 
 	# Set up mass storage to internal EMMC
-	echo /dev/sda > $CONFIGFS/g1/functions/"$usb_mass_storage_function"/lun.0/file
-    echo /dev/sdb > $CONFIGFS/g1/functions/"$usb_mass_storage_function"/lun.1/file
-    echo /dev/sdc > $CONFIGFS/g1/functions/"$usb_mass_storage_function"/lun.2/file
-    echo /dev/sdd > $CONFIGFS/g1/functions/"$usb_mass_storage_function"/lun.3/file
-    echo /dev/sde > $CONFIGFS/g1/functions/"$usb_mass_storage_function"/lun.4/file
-    echo /dev/sdf > $CONFIGFS/g1/functions/"$usb_mass_storage_function"/lun.5/file
-
-	# Rename the mass storage device
-	echo "mmcflasher" > $CONFIGFS/g1/functions/"$usb_mass_storage_function"/lun.0/inquiry_string
+    i=1
+    while [ $i -le $((NUMOFMMC)) ]
+    do 
+        echo "Processing device $i" 
+        tmp=MMC$i
+        eval "dev=\$$tmp"
+        echo $dev > $CONFIGFS/g1/functions/"$usb_mass_storage_function"/lun.$i/file
+        i=$(( i + 1 ))
+    done
 
 	# Link the rndis/mass_storage instance to the configuration
 	ln -s $CONFIGFS/g1/functions/"$usb_rndis_function" $CONFIGFS/g1/configs/c.1 \
@@ -95,10 +94,7 @@ setup_usb_configfs() {
 	ln -s $CONFIGFS/g1/functions/"$usb_mass_storage_function" $CONFIGFS/g1/configs/c.1 \
 		|| echo "  Couldn't symlink $usb_mass_storage_function"
 
-	# Check if there's an USB Device Controller
-
-
-	echo "$(ls /sys/class/udc)" > $CONFIGFS/g1/UDC || ( fatal_error "Couldn't write to UDC" )
+	echo "$(ls /sys/class/udc)" > $CONFIGFS/g1/UDC || ( echo "Couldn't write to UDC" )
 }
 
 setup_usb_configfs
